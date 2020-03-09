@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const authRoutes = require('./routes/auth');
-
+const boardRoutes = require('./routes/board');
 
 const app = express();
 
@@ -18,9 +18,10 @@ app.use((req, res, next) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/boards', boardRoutes);
 
 app.use((error, req, res, next) => {
-   const { status = 500, message, data } = error;
+   const { status = 500, message } = error;
 
     res.status(status).json({message});
 });

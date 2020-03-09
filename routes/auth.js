@@ -20,6 +20,9 @@ router.post(
                 })
             })
             .normalizeEmail(),
+        body('name', 'Please enter a name with only numbers and text at least 5 characters')
+            .isLength({min: 5})
+            .isAlphanumeric(),
         body('password', 'Please enter a password with only numbers and text at least 5 characters')
             .trim()
             .isLength({min: 5})

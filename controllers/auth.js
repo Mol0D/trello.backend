@@ -15,20 +15,21 @@ exports.signup = (req, res, next) => {
         throw error;
     }
 
-    const { email, password } = req.body;
+    const { email, name, password } = req.body;
 
     bcrypt
         .hash(password, 12)
         .then(hashedPw => {
             const user = new User({
                 password: hashedPw,
+                name,
                 email
             });
 
             return user.save();
         })
         .then(result => {
-            res.status(201).json({status: 'ok', userId: result.id});
+            res.status(201).json({message: 'ok', userId: result.id});
         })
         .catch(err => {
             if (!err.statusCode) {
@@ -82,7 +83,7 @@ exports.login = (req, res, next) => {
                 {expiresIn: '1h'}
             );
 
-            res.status(200).json({token, userId: loadedUser._id.toString()});
+            res.status(200).json({token, user: loadedUser});
         })
         .catch(err => {
             if (!err.statusCode) {
