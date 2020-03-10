@@ -9,8 +9,8 @@ router.post(
     '/add',
     [
         body('name')
-            .isEmpty()
-            .withMessage('Please enter a name with only numbers and text at least 5 characters')
+            .isLength({min: 1})
+            .withMessage('Please enter a name with only numbers and text at least 1 character')
     ],
     boardController.addBoard
 );
@@ -22,5 +22,9 @@ router.post('/list/create', boardController.addBoardList);
 router.post('/list/update', boardController.updateBoardList);
 
 router.post('/list/delete', boardController.deleteBoardList);
+
+router.post('/list/card/add', boardController.addBoardListCard);
+
+router.post('/list/card/update', boardController.updateBoardListCard);
 
 module.exports = router;

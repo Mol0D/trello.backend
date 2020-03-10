@@ -14,14 +14,14 @@ exports.addBoard = (req, res, next) => {
         throw error;
     }
 
-    const { id, name } = req.body;
+    const { userId, name } = req.body;
 
     const createdDate = new Date();
 
     const board = new Board({
         createdAt: createdDate,
         lastModified: createdDate,
-        userId: id,
+        userId,
         lists: [],
         name,
     });
@@ -29,7 +29,7 @@ exports.addBoard = (req, res, next) => {
     board
         .save()
         .then(() => {
-          return User.findById(id)
+          return User.findById(userId)
         })
         .then(user => {
             user.boards.push(board);
@@ -73,7 +73,7 @@ exports.getBoard = (req, res, next) => {
 exports.addBoardList = (req, res, next) => {
     const { boardId, name } = req.body;
 
-    let updateDate = new Date();
+    const updateDate = new Date();
 
     Board.findOneAndUpdate({_id: boardId}, { $push: {lists: [{name}]}, lastModified: updateDate}, {new: true, useFindAndModify: false})
         .then(() => {
@@ -96,7 +96,7 @@ exports.updateBoardList = (req, res, next) => {
 
   const updateDate = new Date();
 
-  Board.findOneAndUpdate([{_id: boardId}, {'lists._id': listId}], {
+  Board.findOneAndUpdate({_id: boardId, 'lists._id': listId}, {
       $set: {
           'lists.$.name': newName
       },
@@ -123,7 +123,7 @@ exports.updateBoardList = (req, res, next) => {
 exports.deleteBoardList = (req, res, next) => {
     const {boardId, listId} = req.body;
 
-    Board.findOneAndUpdate([{_id: boardId}, {'lists._id': listId}], {
+    Board.findOneAndUpdate({_id: boardId, 'lists._id': listId}, {
         $pull: {
             lists: {_id: listId}
         }
@@ -146,4 +146,56 @@ exports.deleteBoardList = (req, res, next) => {
             next(err);
         })
 
+};
+
+exports.addBoardListCard = (req, res, next) => {
+    const { boardId, listId, name } = req.body;
+
+    const updateDate = new Date();
+
+    Board.findOneAndUpdate({_id: boardId, 'lists._id': listId}, { $push: {'lists.$.cards': [{name}]}, lastModified: updateDate }, {new: true, useFindAndModify: false})
+        .then(() => {
+            res.status(201).json({
+                message: 'ok'
+            })
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+
+            next(err);
+        })
+};
+
+exports.updateBoardListCard = (req, res, next) => {
+  const { boardId, listId, cardId, name } = req.body;
+
+  const updateDate = new Date();
+
+  Board.findOneAndUpdate({
+      _id: boardId,
+      'lists._id': listId,
+      'lists.cards._id': cardId
+  }, {
+      $set: {
+          'lists.$.cards.$.name': name
+      },
+      lastModified: updateDate
+  }, {
+      new: true,
+      useFindAndModify: false
+  })
+      .then(() => {
+          res.status(201).json({
+              message: 'ok'
+          })
+      })
+      .catch(err => {
+          if (!err.statusCode) {
+              err.statusCode = 500;
+          }
+
+          next(err);
+      })
 };
